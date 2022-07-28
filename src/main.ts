@@ -25,7 +25,9 @@ const password = readlineSync.question(
 
 const HDWallet = ethers.utils.HDNode.fromMnemonic(mneumonic);
 for (let i = 0; i < count; i++) {
-  generateKeyStore(HDWallet, i, password);
+  generateKeyStore(HDWallet, i, password).then((filename) => {
+    openKeyStoreFile(filename, password);
+  });
 }
 
 /**
@@ -35,10 +37,25 @@ for (let i = 0; i < count; i++) {
  * @param ith the index of the wallet in the hierarchy
  * @param passw password to encrypt the keystore
  */
-async function generateKeyStore(hdWallet: HDNode, ith: number, passw: string) {
+async function generateKeyStore(
+  hdWallet: HDNode,
+  ith: number,
+  passw: string
+): Promise<string> {
   const wallet = hdWallet.derivePath(`m/44'/60'/0'/0/${ith}`);
   const keyStore = await encryptKeystore(wallet, passw);
   const filename = `keystore_${wallet.address}.json`;
   fs.writeFileSync(path.join("output", filename), keyStore);
   console.log(`${wallet.address}: ${filename}`);
+  return filename;
+}
+
+async function openKeyStoreFile(filename: string, passw: string) {
+  const keyStore = fs.readFileSync(path.join("output", filename), "utf8");
+  await openKeyStore(keyStore, passw);
+}
+
+async function openKeyStore(keyStore: string, passw: string) {
+  const wallet = await ethers.Wallet.fromEncryptedJson(keyStore, passw);
+  console.log(wallet.address, " generated successfully!");
 }
