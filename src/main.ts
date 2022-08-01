@@ -1,5 +1,5 @@
 import {encryptKeystore} from "@ethersproject/json-wallets";
-import {ethers} from "ethers";
+import {ethers, Wallet} from "ethers";
 import {HDNode} from "ethers/lib/utils";
 import readlineSync from "readline-sync";
 import fs from "fs";
@@ -26,7 +26,9 @@ const password = readlineSync.question(
 const HDWallet = ethers.utils.HDNode.fromMnemonic(mneumonic);
 for (let i = 0; i < count; i++) {
   generateKeyStore(HDWallet, i, password).then((filename) => {
-    openKeyStoreFile(filename, password);
+    openKeyStoreFile(filename, password).then((w) => {
+      console.log("Read:", w.address);
+    });
   });
 }
 
@@ -50,12 +52,15 @@ async function generateKeyStore(
   return filename;
 }
 
-async function openKeyStoreFile(filename: string, passw: string) {
+async function openKeyStoreFile(
+  filename: string,
+  passw: string
+): Promise<Wallet> {
   const keyStore = fs.readFileSync(path.join("output", filename), "utf8");
-  await openKeyStore(keyStore, passw);
+  const wallet = await openKeyStore(keyStore, passw);
+  return wallet;
 }
 
-async function openKeyStore(keyStore: string, passw: string) {
-  const wallet = await ethers.Wallet.fromEncryptedJson(keyStore, passw);
-  console.log(wallet.address, " generated successfully!");
+async function openKeyStore(keyStore: string, passw: string): Promise<Wallet> {
+  return await ethers.Wallet.fromEncryptedJson(keyStore, passw);
 }
