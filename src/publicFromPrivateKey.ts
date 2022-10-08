@@ -15,3 +15,13 @@ const publicKey = wallet.getPublicKeyString();
 console.log(`PublicKey: ${publicKey}`);
 const address = wallet.getAddressString();
 console.log(`Address: ${address}`);
+
+/** ATENÇÃO: O GERADO ACIMA NÃO É O MESMO RESULTADO ABAIXO */
+// console.log(
+//   `ethersjs compressed: `,
+//   ethers.utils.computePublicKey(walletCache[address].privateKey, true)
+// );
+// console.log(
+//   `ethersjs uncompressed: `,
+//   ethers.utils.computePublicKey(walletCache[address].privateKey, false)
+// );
